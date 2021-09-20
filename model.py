@@ -4,6 +4,8 @@ from torch import nn
 import torch.nn.functional as F
 import pytorch_lightning as pl
 
+
+
 class LitAutoEncoder(pl.LightningModule):
     def __init__(self):
         super().__init__()
