@@ -1,4 +1,6 @@
 import torch
+import torch.nn as nn
+import torch.nn.functional as F
 
 class Chomp1d(torch.nn.Module):
     """
@@ -129,7 +131,7 @@ class CausalCNN(torch.nn.Module):
     def forward(self, x):
         return self.network(x)
 
-class TCN(torch.nn.Module):
+class MTSBackbone(torch.nn.Module):
     """
     the structure of encoder, using a causal CNN and the computed representation is
     the output of a fully connected layer applied to the output of an adaptive
@@ -147,16 +149,15 @@ class TCN(torch.nn.Module):
     """
     def __init__(self, in_channels, channels, depth, reduced_size,
                  out_channels, kernel_size):
-        super(TCN, self).__init__()
-        causal_cnn = CausalCNN(
+        super(MTSBackbone, self).__init__()
+        self.causal_cnn = CausalCNN(
             in_channels, channels, depth, reduced_size, kernel_size
         )
-        reduce_size = torch.nn.AdaptiveMaxPool1d(1)
-        squeeze = SqueezeChannels()  # Squeezes the third dimension (time)
-        linear = torch.nn.Linear(reduced_size, out_channels)
-        self.network = torch.nn.Sequential(
-            causal_cnn, reduce_size, squeeze, linear
-        )
+        self.lstm_extractor = torch.nn.LSTM(reduced_size,out_channels,2,batch_first=True,bidirectional=True)
+
 
     def forward(self, x):
-        return self.network(x)
+        out = self.causal_cnn(x)
+        out = out.permute(0,2,1)
+        out,_ = self.lstm_extractor(out)
+        return out
