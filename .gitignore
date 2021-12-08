@@ -4,3 +4,4 @@ chinese-roberta-wwm-ext
 
 .DS_Store
 chinese-roberta-wwm-ext
+models/__pycache__/*
