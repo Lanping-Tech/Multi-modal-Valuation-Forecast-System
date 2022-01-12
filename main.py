@@ -43,23 +43,28 @@ def train(models, device, train_loader, optimizers, epoch):
                 epoch, batch_idx * len(mts), len(train_loader.dataset),
                 100. * batch_idx / len(train_loader), loss.item()))
 
-def test(model, device, test_loader):
-    model.eval()
+def test(models, device, test_loader):
+    mts_model, text_model, fusion_model = models
+    mts_model.eval()
+    text_model.eval()
+    fusion_model.eval()
     test_loss = 0
-    correct = 0
     with torch.no_grad():
-        for data, target in test_loader:
-            data, target = data.to(device), target.to(device)
-            output = model(data)
-            test_loss += F.mse_loss(output, target).item() # sum up batch loss
-            pred = output.argmax(dim=1, keepdim=True) # get the index of the max log-probability
-            correct += pred.eq(target.view_as(pred)).sum().item()
+        for mts, text, label in test_loader:
+            mts, label = mts.to(device), label.to(device)
+            input_ids,attention_mask,token_type_ids = text
+            input_ids,attention_mask,token_type_ids = input_ids.to(device),attention_mask.to(device),token_type_ids.to(device)
+            mts_output = mts_model(mts)
+            text_output = text_model({'input_ids':input_ids,'attention_mask':attention_mask,'token_type_ids':token_type_ids})
+            output = fusion_model(mts_output, text_output)
+            test_loss += F.mse_loss(output, label, reduction='sum').item()  # sum up batch loss
+            # pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
+            # correct += pred.eq(label.view_as(pred)).sum().item()
 
     test_loss /= len(test_loader.dataset)
 
-    print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
-        test_loss, correct, len(test_loader.dataset),
-        100. * correct / len(test_loader.dataset)))
+    print('\nTest set: Average loss: {:.4f}\n'.format(
+        test_loss))
 
 def main():
     # Data settings
