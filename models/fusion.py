@@ -47,12 +47,10 @@ class FusionAttention(nn.Module):
         return self.to_out(out)
 
 class TCNT(nn.Module):
-    def __init__(self, in_channels=5, channels=64, depth=3, reduced_size=160, out_channels=320, kernel_size=3, fushion_heads=4, out_size=1, **kwargs):
+    def __init__(self, out_channels=320, fusion_heads=4, out_size=1, **kwargs):
         super(TCNT, self).__init__()
-        self.text_extractor = MTSBackbone(in_channels, channels, depth, reduced_size, out_channels, kernel_size)
-        self.ts_extractor = TextBackbone(output_dim=out_channels)
 
-        self.fusion = FusionAttention(out_channels, fushion_heads)
+        self.fusion = FusionAttention(out_channels, fusion_heads)
         self.fusion_norm = nn.LayerNorm(out_channels)
 
         self.ff = FeedForward(out_channels, out_channels*2)
@@ -63,10 +61,7 @@ class TCNT(nn.Module):
 
         self.to_out_linear = nn.Linear(out_channels*2, out_size)
 
-    def forward(self, mts, text):
-        mts_features = self.text_extractor(mts)
-        text_features = self.ts_extractor(text)
-
+    def forward(self, mts_features, text_features):
         mts_features = self.fusion_norm(mts_features)
         text_features = self.fusion_norm(text_features)
         fusion_features = self.fusion(mts_features, text_features)
@@ -77,7 +72,7 @@ class TCNT(nn.Module):
         fusion_features = self.to_out_norm(fusion_features)
         _, out_feature = self.to_out_lstm(fusion_features)
 
-        out = out_feature[0].permute(1, 0, 2).contiguous().view(mts.size(0),-1)
+        out = out_feature[0].permute(1, 0, 2).contiguous().view(mts_features.size(0),-1)
 
         out = self.to_out_linear(out)
 

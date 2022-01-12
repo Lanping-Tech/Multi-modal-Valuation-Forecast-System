@@ -147,17 +147,17 @@ class MTSBackbone(torch.nn.Module):
         out_channels: Number of output channels.
         kernel_size: Kernel size of the applied non-residual convolutions.
     """
-    def __init__(self, in_channels, channels, depth, reduced_size,
-                 out_channels, kernel_size):
+    def __init__(self, in_channels=6, channels=64, depth=3, reduced_size=160, out_channels=320, kernel_size=3):
         super(MTSBackbone, self).__init__()
         self.causal_cnn = CausalCNN(
             in_channels, channels, depth, reduced_size, kernel_size
         )
-        self.lstm_extractor = torch.nn.LSTM(reduced_size,out_channels,2,batch_first=True,bidirectional=True)
+        self.lstm_extractor = torch.nn.LSTM(reduced_size,out_channels,2,batch_first=True,bidirectional=False)
 
 
     def forward(self, x):
-        out = self.causal_cnn(x)
-        out = out.permute(0,2,1)
-        out,_ = self.lstm_extractor(out)
-        return out
+        input = x.permute(0,2,1)
+        output = self.causal_cnn(input)
+        output = output.permute(0,2,1)
+        output,_ = self.lstm_extractor(output)
+        return output
