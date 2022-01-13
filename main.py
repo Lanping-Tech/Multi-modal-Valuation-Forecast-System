@@ -11,6 +11,10 @@ from models.fusion import TCNT
 
 from transformers import AdamW
 
+import numpy as np
+
+from sklearn.metrics import mean_absolute_error, mean_squared_error, mean_absolute_percentage_error, r2_score
+
 
 
 def train(models, device, train_loader, optimizers, epoch):
@@ -23,10 +27,6 @@ def train(models, device, train_loader, optimizers, epoch):
         mts, label = mts.to(device), label.to(device)
         input_ids,attention_mask,token_type_ids = text
         input_ids,attention_mask,token_type_ids = input_ids.to(device),attention_mask.to(device),token_type_ids.to(device)
-        # print(input_ids.shape)
-        # print(attention_mask.shape)
-        # print(token_type_ids.shape)
-        # print()
         optimizer_1.zero_grad()
         optimizer_2.zero_grad()
 
@@ -49,6 +49,8 @@ def test(models, device, test_loader):
     text_model.eval()
     fusion_model.eval()
     test_loss = 0
+    y_true = []
+    y_pred = []
     with torch.no_grad():
         for mts, text, label in test_loader:
             mts, label = mts.to(device), label.to(device)
@@ -58,13 +60,19 @@ def test(models, device, test_loader):
             text_output = text_model({'input_ids':input_ids,'attention_mask':attention_mask,'token_type_ids':token_type_ids})
             output = fusion_model(mts_output, text_output)
             test_loss += F.mse_loss(output, label, reduction='sum').item()  # sum up batch loss
-            # pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
-            # correct += pred.eq(label.view_as(pred)).sum().item()
+            y_true.append(label.cpu().numpy())
+            y_pred.append(output.cpu().numpy())
+    
+    y_true = np.concatenate(y_true)
+    y_pred = np.concatenate(y_pred)
+    print('\nTest set: Average loss: {:.4f}, MAE: {:.4f}, RMSE: {:.4f}, R2: {:.4f}, MAPE: {:.4f}'.format(
+        test_loss / len(test_loader),
+        mean_absolute_error(y_true, y_pred),
+        np.sqrt(mean_squared_error(y_true, y_pred)),
+        r2_score(y_true, y_pred),
+        mean_absolute_percentage_error(y_true, y_pred)
+    ))
 
-    test_loss /= len(test_loader.dataset)
-
-    print('\nTest set: Average loss: {:.4f}\n'.format(
-        test_loss))
 
 def main():
     # Data settings
@@ -96,7 +104,6 @@ def main():
 
     test_loader = DataLoader(dataset=test_dataset,
                                 batch_size=batch_size,
-
                                 shuffle=False)
 
     # Device
@@ -115,7 +122,7 @@ def main():
     optimizers = [optimizer_1, optimizer_2]
 
     for epoch in range(1, epochs + 1):
-        train(models, device, train_loader, optimizers, epoch)
+        train(models, device, train_loader, optimizers, epoch) 
         test(models, device, test_loader)
 
 if __name__ == '__main__':
