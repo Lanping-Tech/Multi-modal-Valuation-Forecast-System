@@ -134,7 +134,7 @@ def main():
     optimizers = [optimizer_1, optimizer_2]
 
     for epoch in range(1, epochs + 1):
-        # train(models, device, train_loader, optimizers, epoch) 
+        train(models, device, train_loader, optimizers, epoch) 
         test(models, device, test_loader)
 
 if __name__ == '__main__':
