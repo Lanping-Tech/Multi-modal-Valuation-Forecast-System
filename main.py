@@ -28,7 +28,6 @@ def train(models, device, train_loader, optimizers, epoch):
         mts, label = mts.to(device), label.to(device)
         input_ids,attention_mask,token_type_ids = text
         input_ids,attention_mask,token_type_ids = input_ids.to(device),attention_mask.to(device),token_type_ids.to(device)
-        print(batch_idx)
         optimizer_1.zero_grad()
         optimizer_2.zero_grad()
 
@@ -60,7 +59,8 @@ def test(models, device, test_loader):
     y_true = []
     y_pred = []
     with torch.no_grad():
-        for mts, text, label in test_loader:
+        for batch_idx, (mts, text, label) in enumerate(test_loader):
+            print(batch_idx)
             mts, label = mts.to(device), label.to(device)
             input_ids,attention_mask,token_type_ids = text
             input_ids,attention_mask,token_type_ids = input_ids.to(device),attention_mask.to(device),token_type_ids.to(device)
@@ -101,7 +101,7 @@ def main():
     
 
     # Training settings
-    batch_size = 1
+    batch_size = 8
     epochs = 10
 
     # Dataset
@@ -134,8 +134,8 @@ def main():
     optimizers = [optimizer_1, optimizer_2]
 
     for epoch in range(1, epochs + 1):
-        train(models, device, train_loader, optimizers, epoch) 
-        # test(models, device, test_loader)
+        # train(models, device, train_loader, optimizers, epoch) 
+        test(models, device, test_loader)
 
 if __name__ == '__main__':
     main()

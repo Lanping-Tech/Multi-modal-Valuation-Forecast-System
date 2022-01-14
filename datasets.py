@@ -11,7 +11,7 @@ class MultiModalDataset(data.Dataset):
         self.window_size = window_size
         self.mts_data, self.text_data, _, _ = load_data(mts_path, text_path, stock_ids, WINDOW_SIZE=window_size+1)
         self.tokenizer = AutoTokenizer.from_pretrained('chinese-roberta-wwm-ext')
-        print(len(self.mts_data), len(self.text_data))
+        # print(len(self.mts_data), len(self.text_data))
 
     def __getitem__(self, index):
         ts, text = self.mts_data[index], self.text_data[index]
@@ -20,17 +20,18 @@ class MultiModalDataset(data.Dataset):
         label = ts[self.window_size, 3:4]
         label = torch.tensor(label, dtype=torch.float)
         content = []
+        # print(len(text))
         for i in range(self.window_size):
             candidated_text = text[i]
             seleted_id = np.random.randint(len(candidated_text))
             content.append(candidated_text[seleted_id])
             
-        input_ids_list = torch.empty(0, 512, dtype=torch.long)
-        attention_mask_list = torch.empty(0, 512, dtype=torch.long)
-        token_type_ids_list = torch.empty(0, 512, dtype=torch.long)
+        input_ids_list = torch.empty(0, 128, dtype=torch.long)
+        attention_mask_list = torch.empty(0, 128, dtype=torch.long)
+        token_type_ids_list = torch.empty(0, 128, dtype=torch.long)
 
         for i in range(len(content)):
-            content_encoding = self.tokenizer(content[i], add_special_tokens=True, max_length=512, padding='max_length', return_tensors='pt')
+            content_encoding = self.tokenizer(content[i], add_special_tokens=True, max_length=128, padding='max_length', return_tensors='pt')
             input_ids = content_encoding['input_ids']
             attention_mask = content_encoding['attention_mask']
             token_type_ids = content_encoding['token_type_ids']

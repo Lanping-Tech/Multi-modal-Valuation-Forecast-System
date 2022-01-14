@@ -15,7 +15,7 @@ def text_read_line(line):
     content = ''.join(content[2:]).replace('\t', '').replace(' ', '').replace('\n', '')
     return t, content
 
-def load_data(ts_path, text_path, stock_ids, MAX_TEXT_LEN = 510, WINDOW_SIZE = 5):
+def load_data(ts_path, text_path, stock_ids, MAX_TEXT_LEN = 125, WINDOW_SIZE = 5):
     all_data = {}
     ts_files = os.listdir(ts_path)
     for ts_file in ts_files:
@@ -46,10 +46,12 @@ def load_data(ts_path, text_path, stock_ids, MAX_TEXT_LEN = 510, WINDOW_SIZE = 5
             ts_time_dict[t] = ts
 
         text_time_dict = {}
+        new_ts_time_dict = {}
         for text_line in text_data:
             t, text = text_read_line(text_line)
             if t not in ts_time_dict:
                 continue
+            new_ts_time_dict[t] = ts_time_dict[t]
             if t in text_time_dict:
                 last_text = text_time_dict[t][-1]
                 del text_time_dict[t][-1]
@@ -66,7 +68,7 @@ def load_data(ts_path, text_path, stock_ids, MAX_TEXT_LEN = 510, WINDOW_SIZE = 5
                 else:
                     text_time_dict[t] = [text]
 
-        sorted_ts_time_dict = sorted(ts_time_dict.items(), key=lambda x:x[0])
+        sorted_ts_time_dict = sorted(new_ts_time_dict.items(), key=lambda x:x[0])
         sorted_ts_time_value_list = [x[1] for x in sorted_ts_time_dict]
         sorted_text_time_dict = sorted(text_time_dict.items(), key=lambda x:x[0])
         sorted_text_time_value_list = [x[1] for x in sorted_text_time_dict]
@@ -77,6 +79,8 @@ def load_data(ts_path, text_path, stock_ids, MAX_TEXT_LEN = 510, WINDOW_SIZE = 5
         means.append(mean)
         stds.append(std)
         normalized_ts_value = (normalized_ts_value - mean) / std
+
+        print(len(sorted_ts_time_value_list), len(sorted_text_time_value_list))
 
         for i in range(len(sorted_ts_time_value_list) - WINDOW_SIZE + 1):
             ts_window = normalized_ts_value[i:i+WINDOW_SIZE]
