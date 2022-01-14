@@ -23,10 +23,12 @@ def train(models, device, train_loader, optimizers, epoch):
     mts_model.train()
     text_model.train()
     fusion_model.train()
+    train_loss_best = 1e10
     for batch_idx, (mts, text, label) in enumerate(train_loader):
         mts, label = mts.to(device), label.to(device)
         input_ids,attention_mask,token_type_ids = text
         input_ids,attention_mask,token_type_ids = input_ids.to(device),attention_mask.to(device),token_type_ids.to(device)
+        print(batch_idx)
         optimizer_1.zero_grad()
         optimizer_2.zero_grad()
 
@@ -42,6 +44,12 @@ def train(models, device, train_loader, optimizers, epoch):
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * len(mts), len(train_loader.dataset),
                 100. * batch_idx / len(train_loader), loss.item()))
+            if loss.item() < train_loss_best:
+                train_loss_best = loss.item()
+                torch.save(mts_model.state_dict(), 'output/mts_model.pth')
+                torch.save(text_model.state_dict(), 'output/text_model.pth')
+                torch.save(fusion_model.state_dict(), 'output/fusion_model.pth')
+        
 
 def test(models, device, test_loader):
     mts_model, text_model, fusion_model = models
@@ -75,6 +83,10 @@ def test(models, device, test_loader):
 
 
 def main():
+
+    if not os.path.exists('output'):
+        os.makedirs('output')
+
     # Data settings
     in_channels = 6
     channels = 64
@@ -89,7 +101,7 @@ def main():
     
 
     # Training settings
-    batch_size = 64
+    batch_size = 1
     epochs = 10
 
     # Dataset
@@ -123,7 +135,7 @@ def main():
 
     for epoch in range(1, epochs + 1):
         train(models, device, train_loader, optimizers, epoch) 
-        test(models, device, test_loader)
+        # test(models, device, test_loader)
 
 if __name__ == '__main__':
     main()

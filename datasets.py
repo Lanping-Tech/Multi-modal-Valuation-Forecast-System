@@ -11,6 +11,7 @@ class MultiModalDataset(data.Dataset):
         self.window_size = window_size
         self.mts_data, self.text_data, _, _ = load_data(mts_path, text_path, stock_ids, WINDOW_SIZE=window_size+1)
         self.tokenizer = AutoTokenizer.from_pretrained('chinese-roberta-wwm-ext')
+        print(len(self.mts_data), len(self.text_data))
 
     def __getitem__(self, index):
         ts, text = self.mts_data[index], self.text_data[index]

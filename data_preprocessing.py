@@ -21,12 +21,12 @@ def load_data(ts_path, text_path, stock_ids, MAX_TEXT_LEN = 510, WINDOW_SIZE = 5
     for ts_file in ts_files:
         stock_id = ts_file.split('.')[0]
         ts_file = os.path.join(ts_path, ts_file)
-        with open(ts_file, 'r') as f:
+        with open(ts_file, 'r', encoding='UTF-8') as f:
             ts_data = f.readlines() 
         ts_data = ts_data[1:]
 
         text_file = os.path.join(text_path, stock_id + '.csv')
-        with open(text_file, 'r') as f:
+        with open(text_file, 'r', encoding='UTF-8') as f:
             text_data = f.readlines()
         text_data = text_data[1:]
         

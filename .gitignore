@@ -6,5 +6,6 @@ chinese-roberta-wwm-ext
 chinese-roberta-wwm-ext
 models/__pycache__/*
 
+output/*
 
 data/*
