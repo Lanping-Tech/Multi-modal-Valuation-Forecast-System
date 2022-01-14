@@ -60,7 +60,7 @@ def test(models, device, test_loader):
     y_pred = []
     with torch.no_grad():
         for batch_idx, (mts, text, label) in enumerate(test_loader):
-            print(batch_idx)
+            # print(batch_idx)
             mts, label = mts.to(device), label.to(device)
             input_ids,attention_mask,token_type_ids = text
             input_ids,attention_mask,token_type_ids = input_ids.to(device),attention_mask.to(device),token_type_ids.to(device)

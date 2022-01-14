@@ -80,7 +80,7 @@ def load_data(ts_path, text_path, stock_ids, MAX_TEXT_LEN = 125, WINDOW_SIZE = 5
         stds.append(std)
         normalized_ts_value = (normalized_ts_value - mean) / std
 
-        print(len(sorted_ts_time_value_list), len(sorted_text_time_value_list))
+        # print(len(sorted_ts_time_value_list), len(sorted_text_time_value_list))
 
         for i in range(len(sorted_ts_time_value_list) - WINDOW_SIZE + 1):
             ts_window = normalized_ts_value[i:i+WINDOW_SIZE]
