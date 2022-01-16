@@ -11,6 +11,8 @@ from models.fusion import TCNT
 
 from transformers import AdamW
 
+from data_preprocessing import load_data
+
 import numpy as np
 
 from sklearn.metrics import mean_absolute_error, mean_squared_error, mean_absolute_percentage_error, r2_score
@@ -104,10 +106,19 @@ def main():
     batch_size = 8
     epochs = 10
 
-    # Dataset
-    train_dataset = MultiModalDataset('data/股价', 'data/文本数据', ['000001'])#, '000858', '300003', '300014'])
+    window_size = 5
+    train_test_split = 0.8
 
-    test_dataset = MultiModalDataset('data/股价', 'data/文本数据', ['600104'])#, '600887', '600900'])
+    mts_data, text_data, _, _ = load_data('data/股价', 'data/文本数据', ['000001'], WINDOW_SIZE=window_size+1)
+
+    train_size = int(train_test_split * len(text_data))
+    train_mts_data, test_mts_data = mts_data[:train_size], mts_data[train_size:]
+    train_text_data, test_text_data = text_data[:train_size], text_data[train_size:]
+
+    # Dataset
+    train_dataset = MultiModalDataset(train_mts_data, train_text_data, window_size)
+
+    test_dataset = MultiModalDataset(test_mts_data, test_text_data, window_size)
 
     # Data Loader (Input Pipeline)
     train_loader = DataLoader(dataset=train_dataset,

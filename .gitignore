@@ -9,3 +9,5 @@ models/__pycache__/*
 output/*
 
 data/*
+
+pretrained/*
