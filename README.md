@@ -1,5 +1,5 @@
-# Multi-modal-Valuation-Forecast-System
-多模态股价预测系统 
+# Multi-modal-Valuation-Forecast-System: TCNT
+多模态股价预测系统 TCNT
 
 ## 预训练模型
 下载预训练模型chinese-roberta-wwm-ext:
@@ -11,3 +11,7 @@
 ## 多模态股票数据
 
 [百度云](https://pan.baidu.com/s/18uiEOH4LSrK8Dbeq7vFmJg) 提取码: klgn
+
+## 实验结果
+
+![result](imgs/result_compare.png)
