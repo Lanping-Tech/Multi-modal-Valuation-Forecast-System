@@ -134,7 +134,7 @@ def main():
 
     # Model
     mts_model = MTSBackbone(in_channels, channels, depth, reduced_size, out_channels, kernel_size).to(device)
-    text_model = TextBackbone(output_dim=out_channels).to(device)
+    text_model = TextBackbone(output_dim=out_channels, window_size=window_size).to(device)
     fusion_model = TCNT(out_channels, fusion_heads, out_size).to(device)
 
     # Optimizer

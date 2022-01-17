@@ -5,18 +5,19 @@ from transformers import pipeline
 
 class TextBackbone(torch.nn.Module):
 
-    def __init__(self, pretrained_model_name='chinese-roberta-wwm-ext', output_dim=320):
+    def __init__(self, pretrained_model_name='chinese-roberta-wwm-ext', output_dim=320, window_size=5):
         super(TextBackbone, self).__init__()
         self.extractor = AutoModel.from_pretrained(pretrained_model_name)
         self.fc = torch.nn.Linear(768, output_dim)
         self.output_dim = output_dim
+        self.window_size = window_size
 
 
     def forward(self, x):
         input_ids = x['input_ids']
         attention_mask = x['attention_mask']
         token_type_ids = x['token_type_ids']
-        outputs = torch.empty(0, 5, self.output_dim).to(input_ids.device)
+        outputs = torch.empty(0, self.window_size, self.output_dim).to(input_ids.device)
         for i in range(input_ids.shape[0]):
             input_ids_i = input_ids[i]
             attention_mask_i = attention_mask[i]

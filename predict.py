@@ -8,7 +8,9 @@ from models.fusion import TCNT
 
 import numpy as np
 
-from keras.models import load_model
+from tensorflow.keras.models import load_model
+from tcn import TCN, tcn_full_summary
+from tensorflow.keras.initializers import glorot_uniform
 
 
 # Model settings
@@ -46,7 +48,7 @@ lstm_model = load_model(lstm_model_path)
 lstm_pred = lstm_model.predict(x_test)[:,0]
 lstm_pred = (lstm_pred * stds[3]) + means[3]
 
-tcn_model = load_model(tcn_model_path)
+tcn_model = load_model(tcn_model_path, custom_objects={'TCN': TCN, 'GlorotUniform': glorot_uniform()})
 tcn_pred = tcn_model.predict(x_test)[:,0]
 tcn_pred = (tcn_pred * stds[3]) + means[3]
 
@@ -62,9 +64,9 @@ mts_model = MTSBackbone(in_channels, channels, depth, reduced_size, out_channels
 text_model = TextBackbone(output_dim=out_channels).to(device)
 fusion_model = TCNT(out_channels, fusion_heads, out_size).to(device)
 
-mts_model.load_state_dict(torch.load('petrained/mts_model.pth'))
-text_model.load_state_dict(torch.load('petrained/text_model.pth'))
-fusion_model.load_state_dict(torch.load('petrained/fusion_model.pth'))
+mts_model.load_state_dict(torch.load('pretrained/mts_model.pth'))
+text_model.load_state_dict(torch.load('pretrained/text_model.pth'))
+fusion_model.load_state_dict(torch.load('pretrained/fusion_model.pth'))
 
 mts_model.eval()
 text_model.eval()
